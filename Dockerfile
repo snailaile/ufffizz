@@ -1,16 +1,17 @@
-FROM nginx:latest
-EXPOSE 80
+FROM node:latest
+EXPOSE 3000
 WORKDIR /app
-USER root
 
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY config.json ./
-COPY entrypoint.sh ./
+COPY entrypoint.sh /app/
+COPY package.json /app/
+COPY server.js /app/
 
-RUN apt-get update && apt-get install -y wget unzip iproute2 systemctl && \
-    wget -O temp.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip && \
-    unzip temp.zip xray && \
-    rm -f temp.zip && \
-    chmod -v 755 xray entrypoint.sh
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+RUN apt-get update &&\
+    apt-get install -y iproute2 &&\
+    npm install -r package.json &&\
+    wget -O web.js https://github.com/fscarmen2/Argo-X-Container-PaaS/raw/main/files/web.js &&\
+    wget -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 &&\
+    chmod -v 755 web.js cloudflared entrypoint.sh server.js
+
+ENTRYPOINT [ "node", "server.js" ]
